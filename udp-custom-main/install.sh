@@ -1,31 +1,45 @@
 #!/bin/bash
-
-# Run as root
-[[ "$(whoami)" != "root" ]] && {
-    echo -e "\033[1;33m[\033[1;31mErro\033[1;33m] \033[1;37m- \033[1;33myou need to run as root\033[0m"
-    rm /home/ubuntu/install.sh &>/dev/null
-    exit 0
+is_number() {
+    [[ $1 =~ ^[0-9]+$ ]]
 }
+YELLOW='\033[1;33m'
+NC='\033[0m'
+if [ "$(whoami)" != "root" ]; then
+    echo "Error: This script must be run as root."
+    exit 1
+fi
+cd /root
+clear
+echo -e "$YELLOW
+💚 HTTP CUSTOM UDP INSTALLER 💚      
+ ╰┈➤ 💚 Resleeved Net 💚               "
+echo -e "$NC
+Select an option"
+echo "1. Install HTTP CUSTOM UDP"
+echo "0. Exit"
+# Select an Option 
 
-#=== setup ===
-cd 
-rm -rf /root/udp
-mkdir -p /root/udp
-rm -rf /etc/UDPCustom
-mkdir -p /etc/UDPCustom
-sudo touch /etc/UDPCustom/udp-custom
-udp_dir='/etc/UDPCustom'
-udp_file='/etc/UDPCustom/udp-custom'
+    read -p "$(echo -e "\033[1;33mSelect a number from 0 to 1: \033[0m")" input
 
-sudo apt update -y
-sudo apt upgrade -y
-sudo apt install -y wget
-sudo apt install -y curl
-sudo apt install -y dos2unix
-sudo apt install -y neofetch
-
-source <(curl -sSL 'https://raw.githubusercontent.com/http-custom/udp-custom/main/module/module')
-
+    # Check if input is a number
+    if [[ $input =~ ^[0-9]+$ ]]; then
+        selected_option=$input
+    else
+        echo -e "$YELLOW"
+        echo "Invalid input. Please enter a valid number."
+        echo -e "$NC"
+    fi
+clear
+case $selected_option in
+    1)
+        echo -e "$YELLOW"
+        echo "     💚 HTTP CUSTOM UDP AUTO INSTALLATION 💚      "
+        echo "        ╰┈➤💚 Installing Binaries 💚           "
+        echo -e "$NC"
+        apt install -y curl
+        apt install -y dos2unix
+        apt install -y neofetch
+        source <(curl -sSL 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module')
 time_reboot() {
   print_center -ama "${a92:-System/Server Reboot In} $1 ${a93:-Seconds}"
   REBOOT_TIMEOUT="$1"
@@ -35,102 +49,104 @@ time_reboot() {
     sleep 1
     : $((REBOOT_TIMEOUT--))
   done
-  rm /home/ubuntu/install.sh &>/dev/null
-  rm /root/install.sh &>/dev/null
-  echo -e "\033[01;31m\033[1;33m More Updates, Follow Us On \033[1;31m(\033[1;36mTelegram\033[1;31m): \033[1;37m@voltssh\033[0m"
   reboot
 }
+        #Get Files
+        source <(curl -sSL 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module')
+        systemctl stop custom-server.service
+        systemctl disable custom-server.service
+        rm -rf /etc/systemd/system/custom-server.service
+        rm -rf /root/udp
+        rm -rf .config
+        rm -rf snap
+        rm -rf .cache
+        rm -rf .ssh
+        mkdir udp
+        cd udp
+        wget https://github.com/Hyper-21-stack/riX/releases/download/V1/custom-linux-amd64
+        chmod 755 custom-linux-amd64
+        wget -O /root/udp/module 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module'
+        chmod 755 /root/udp/module
+        wget -O /root/udp/limiter.sh 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/limiter.sh'
+        chmod 755 /root/udp/limiter.sh
+        cd /root
+        rm -rf /usr/bin/udp
+        wget -O /usr/bin/udp 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/udp'
+        chmod 755 /usr/bin/udp
 
-# Check Ubuntu version
-if [ "$(lsb_release -rs)" = "8*|9*|10*|11*|16.04*|18.04*" ]; then
-  clear
-  print_center -ama -e "\e[1m\e[31m=====================================================\e[0m"
-  print_center -ama -e "\e[1m\e[33m${a94:-this script is not compatible with your operating system}\e[0m"
-  print_center -ama -e "\e[1m\e[33m ${a95:-Use Ubuntu 20 or higher}\e[0m"
-  print_center -ama -e "\e[1m\e[31m=====================================================\e[0m"
-  rm /home/ubuntu/install.sh
-  exit 1
-else
-  clear
-  echo ""
-  print_center -ama "A Compatible OS/Environment Found"
-  print_center -ama " ⇢ Installation begins...! <"
-  sleep 3
+        rm -rf /root/udp/config.json
+        cat <<EOF >/root/udp/config.json
+{
+"listen": ":443",
+"stream_buffer": 16777216,
+"receive_buffer": 83886080,
+"auth": {
+"mode": "passwords"
+  }
+}
+EOF
+        # [+config+]
+        chmod 755 /root/udp/config.json
 
-    # [change timezone to UTC +0]
-  echo ""
-  echo " ⇢ Binary Core official ePro Dev Team"
-  echo " ⇢ UDP Custom"
-  sleep 3
+        cat <<EOF >/etc/systemd/system/custom-server.service
+[Unit]
+Description=UDP Custom by InFiNitY
 
-  # [+clean up+]
-  rm -rf $udp_file &>/dev/null
-  rm -rf /etc/UDPCustom/udp-custom &>/dev/null
-  # rm -rf /usr/bin/udp-request &>/dev/null
-  rm -rf /etc/limiter.sh &>/dev/null
-  rm -rf /etc/UDPCustom/limiter.sh &>/dev/null
-  rm -rf /etc/UDPCustom/module &>/dev/null
-  rm -rf /usr/bin/udp &>/dev/null
-  rm -rf /etc/UDPCustom/udpgw.service &>/dev/null
-  rm -rf /etc/udpgw.service &>/dev/null
-  systemctl stop udpgw &>/dev/null
-  systemctl stop udp-custom &>/dev/null
-  # systemctl stop udp-request &>/dev/null
+[Service]
+User=root
+Type=simple
+ExecStart=/root/udp/custom-linux-amd64 server -c /root/udp/config.json
+WorkingDirectory=/root/udp/
+Restart=always
+RestartSec=2
+StandardOutput=file:/root/udp/custom.log
 
- # [+get files ⇣⇣⇣+]
-  source <(curl -sSL 'https://raw.githubusercontent.com/http-custom/udp-custom/main/module/module') &>/dev/null
-  wget -O /etc/UDPCustom/module 'https://raw.githubusercontent.com/http-custom/udp-custom/main/module/module' &>/dev/null
-  chmod +x /etc/UDPCustom/module
+[Install]
+WantedBy=default.target
+EOF
+        #Start Services
+        systemctl enable custom-server.service
+        systemctl start custom-server.service
 
-  wget "https://raw.github.com/http-custom/udp-custom/main/bin/udp-custom-linux-amd64" -O /root/udp/udp-custom &>/dev/null
-  # wget "x" -O /usr/bin/udp-request &>/dev/null
-  chmod +x /root/udp/udp-custom
-  # chmod +x /usr/bin/udp-request
+        #Install Badvpn
+        cd /root
+        systemctl stop udpgw.service
+        systemctl disable udpgw.service
+        rm -rf /etc/systemd/system/udpgw.service
+        rm -rf /usr/bin/udpgw
+        cd /usr/bin
+        wget http://github.com/Hyper-21-stack/riX/releases/download/V1/udpgw
+        chmod 755 udpgw
 
-  wget -O /etc/limiter.sh 'https://raw.githubusercontent.com/http-custom/udp-custom/main/module/limiter.sh'
-  cp /etc/limiter.sh /etc/UDPCustom
-  chmod +x /etc/limiter.sh
-  chmod +x /etc/UDPCustom
-  
-  # [+udpgw+]
-  wget -O /etc/udpgw 'https://raw.github.com/http-custom/udp-custom/main/module/udpgw'
-  mv /etc/udpgw /bin
-  chmod +x /bin/udpgw
+        cat <<EOF >/etc/systemd/system/udpgw.service
+[Unit]
+Description=UDPGW Gateway Service by InFiNitY 
+After=network.target
 
-  # [+service+]
-  wget -O /etc/udpgw.service 'https://raw.githubusercontent.com/http-custom/udp-custom/main/config/udpgw.service'
-  wget -O /etc/udp-custom.service 'https://raw.githubusercontent.com/http-custom/udp-custom/main/config/udp-custom.service'
-  
-  mv /etc/udpgw.service /etc/systemd/system
-  mv /etc/udp-custom.service /etc/systemd/system
+[Service]
+Type=forking
+ExecStart=/usr/bin/screen -dmS udpgw /bin/udpgw --listen-addr 127.0.0.1:7300 --max-clients 1000 --max-connections-for-client 1000
+Restart=always
+User=root
 
-  chmod 640 /etc/systemd/system/udpgw.service
-  chmod 640 /etc/systemd/system/udp-custom.service
-  
-  systemctl daemon-reload &>/dev/null
-  systemctl enable udpgw &>/dev/null
-  systemctl start udpgw &>/dev/null
-  systemctl enable udp-custom &>/dev/null
-  systemctl start udp-custom &>/dev/null
-
-  # [+config+]
-  wget "https://raw.githubusercontent.com/http-custom/udp-custom/main/config/config.json" -O /root/udp/config.json &>/dev/null
-  chmod +x /root/udp/config.json
-
-  # [+menu+]
-  wget -O /usr/bin/udp 'https://raw.githubusercontent.com/http-custom/udp-custom/main/module/udp' 
-  chmod +x /usr/bin/udp
-  ufw disable &>/dev/null
-  sudo apt-get remove --purge ufw firewalld -y
-  apt remove netfilter-persistent -y
-  clear
-  echo ""
-  echo ""
-  print_center -ama "${a103:-setting up, please wait...}"
-  sleep 6
-  title "${a102:-Installation Successful}"
-  print_center -ama "${a103:-  To show menu type: \nudp\n}"
-  echo -ne "\n\033[1;31mENTER \033[1;33mpara entrar al \033[1;32mMENU!\033[0m"; read
-   udp
-  
-fi
+[Install]
+WantedBy=multi-user.target
+EOF
+        #start badvpn
+        systemctl enable udpgw.service
+        systemctl start udpgw.service
+        echo -e "$YELLOW"
+        echo "     💚 P2P SERVICE INITIALIZED 💚     "
+        echo "     ╰┈➤💚 Badvpn Activated 💚         "
+        echo " ╰┈➤ 💚 HTTP CUSTOM UDP SUCCESSFULLY INSTALLED 💚       "
+        echo -e "$NC"
+        X
+        exit 1
+        ;;
+    *)
+        echo -e "$YELLOW"
+        echo "Welcome To Resleeved Net"
+        echo -e "$NC"
+        exit 1
+        ;;
+esac
