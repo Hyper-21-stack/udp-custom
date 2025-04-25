@@ -17,18 +17,16 @@ echo -e "$NC
 Select an option"
 echo "1. Install HTTP CUSTOM UDP"
 echo "0. Exit"
-# Select an Option 
 
-    read -p "$(echo -e "\033[1;33mSelect a number from 0 to 1: \033[0m")" input
+read -p "$(echo -e "\033[1;33mSelect a number from 0 to 1: \033[0m")" input
 
-    # Check if input is a number
-    if [[ $input =~ ^[0-9]+$ ]]; then
-        selected_option=$input
-    else
-        echo -e "$YELLOW"
-        echo "Invalid input. Please enter a valid number."
-        echo -e "$NC"
-    fi
+if [[ $input =~ ^[0-9]+$ ]]; then
+    selected_option=$input
+else
+    echo -e "$YELLOW"
+    echo "Invalid input. Please enter a valid number."
+    echo -e "$NC"
+fi
 clear
 case $selected_option in
     1)
@@ -36,10 +34,9 @@ case $selected_option in
         echo "     💚 HTTP CUSTOM UDP AUTO INSTALLATION 💚      "
         echo "        ╰┈➤💚 Installing Binaries 💚           "
         echo -e "$NC"
-        apt install -y curl
-        apt install -y dos2unix
-        apt install -y neofetch
-        source <(curl -sSL 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module')
+        apt install -y curl dos2unix neofetch
+        source <(curl -sSL 'https://raw.githubusercontent.com/Hyper-21-stack/udp-custom/main/udp-custom-main/module')
+
 time_reboot() {
   print_center -ama "${a92:-System/Server Reboot In} $1 ${a93:-Seconds}"
   REBOOT_TIMEOUT="$1"
@@ -51,30 +48,31 @@ time_reboot() {
   done
   reboot
 }
-        #Get Files
-        source <(curl -sSL 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module')
+
+        # Cleanup
         systemctl stop custom-server.service
         systemctl disable custom-server.service
         rm -rf /etc/systemd/system/custom-server.service
-        rm -rf /root/udp
-        rm -rf .config
-        rm -rf snap
-        rm -rf .cache
-        rm -rf .ssh
-        mkdir udp
-        cd udp
-        wget https://github.com/Hyper-21-stack/riX/releases/download/V1/custom-linux-amd64
+        rm -rf /root/udp .config snap .cache .ssh
+
+        # Setup
+        mkdir -p /root/udp
+        cd /root/udp
+
+        wget https://github.com/Hyper-21-stack/udp-custom/releases/download/V1/custom-linux-amd64
         chmod 755 custom-linux-amd64
-        wget -O /root/udp/module 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/module'
+
+        wget -O /root/udp/module 'https://raw.githubusercontent.com/Hyper-21-stack/udp-custom/main/udp-custom-main/module'
         chmod 755 /root/udp/module
-        wget -O /root/udp/limiter.sh 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/limiter.sh'
+
+        wget -O /root/udp/limiter.sh 'https://raw.githubusercontent.com/Hyper-21-stack/udp-custom/main/udp-custom-main/limiter.sh'
         chmod 755 /root/udp/limiter.sh
-        cd /root
+
         rm -rf /usr/bin/udp
-        wget -O /usr/bin/udp 'https://raw.githubusercontent.com/Hyper-21-stack/riX/main/ns/module/udp'
+        wget -O /usr/bin/udp 'https://raw.githubusercontent.com/Hyper-21-stack/udp-custom/main/udp-custom-main/udp'
         chmod 755 /usr/bin/udp
 
-        rm -rf /root/udp/config.json
+        # Create config
         cat <<EOF >/root/udp/config.json
 {
 "listen": ":443",
@@ -85,12 +83,12 @@ time_reboot() {
   }
 }
 EOF
-        # [+config+]
         chmod 755 /root/udp/config.json
 
+        # Create service
         cat <<EOF >/etc/systemd/system/custom-server.service
 [Unit]
-Description=UDP Custom by InFiNitY
+Description=UDP Custom by HyperStack
 
 [Service]
 User=root
@@ -104,23 +102,19 @@ StandardOutput=file:/root/udp/custom.log
 [Install]
 WantedBy=default.target
 EOF
-        #Start Services
+
         systemctl enable custom-server.service
         systemctl start custom-server.service
 
-        #Install Badvpn
-        cd /root
-        systemctl stop udpgw.service
-        systemctl disable udpgw.service
-        rm -rf /etc/systemd/system/udpgw.service
-        rm -rf /usr/bin/udpgw
+        # Install Badvpn
         cd /usr/bin
-        wget http://github.com/Hyper-21-stack/riX/releases/download/V1/udpgw
+        rm -rf /etc/systemd/system/udpgw.service /usr/bin/udpgw
+        wget https://github.com/Hyper-21-stack/udp-custom/releases/download/V1/udpgw
         chmod 755 udpgw
 
         cat <<EOF >/etc/systemd/system/udpgw.service
 [Unit]
-Description=UDPGW Gateway Service by InFiNitY 
+Description=UDPGW Gateway Service by HyperStack
 After=network.target
 
 [Service]
@@ -132,9 +126,10 @@ User=root
 [Install]
 WantedBy=multi-user.target
 EOF
-        #start badvpn
+
         systemctl enable udpgw.service
         systemctl start udpgw.service
+
         echo -e "$YELLOW"
         echo "     💚 P2P SERVICE INITIALIZED 💚     "
         echo "     ╰┈➤💚 Badvpn Activated 💚         "
